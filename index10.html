@@ -12,6 +12,10 @@
       integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
       crossorigin="anonymous"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css"
+    />
 
     <title>Hello, world!</title>
   </head>
@@ -33,19 +37,12 @@
         <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="index.html">Link</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
+              <a class="nav-link active" aria-current="page" href="index.html"
+                >Home</a
               >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="index10.html">Back Office</a>
             </li>
           </ul>
           <form class="d-flex">
@@ -121,7 +118,19 @@
                 required
               />
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="d-flex justify-content-between mt-4">
+              <button id="edit" type="submit" class="btn btn-primary">
+                <span>Submit</span>
+              </button>
+              <button
+                onclick="deleteBtn()"
+                id="delete-btn"
+                type="button"
+                class="btn btn-danger d-none"
+              >
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -136,9 +145,63 @@
       crossorigin="anonymous"
     ></script>
     <script>
+      const proId = new URLSearchParams(window.location.search).get("id");
+      const url = proId
+        ? "https://striveschool-api.herokuapp.com/api/product/" + proId
+        : "https://striveschool-api.herokuapp.com/api/product/";
+      const method = proId ? "PUT" : "POST";
+
+      window.onload = async () => {
+        if (proId) {
+          document
+            .querySelector("h2")
+            .insertAdjacentHTML("beforeend", `<span>-Edit</span>`);
+          let btn = document.querySelector("#edit");
+          let btnText = document.querySelector("button[type=submit] span");
+          btn.classList.remove("btn-primary");
+          btn.classList.add("btn-success");
+          btnText.innerText = "Edit";
+          document.querySelector("#delete-btn").classList.remove("d-none");
+
+          const apiFetch = await fetch(url, {
+            method,
+            headers: {
+              Authorization:
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MGRjNjBjNGIzNTgxNzAwMTVjMjI3MGQiLCJpYXQiOjE2MjUwNTU0MjgsImV4cCI6MTYyNjI2NTAyOH0.sK7YEMPt-TWTjKV0e9vzNxLJCKX5zhbAYRIxCPheR2g",
+              "content-type": "application/json",
+            },
+          });
+
+          const fetchData = await apiFetch.json();
+          console.log(fetchData);
+
+          document.getElementById("name").value = fetchData.name;
+          document.getElementById("price").value = fetchData.price;
+          document.getElementById("description").value = fetchData.description;
+          document.getElementById("brand").value = fetchData.brand;
+          document.getElementById("img").value = fetchData.imageUrl;
+          // +++++++++++++++++++++++++++++++++++++++++++++++++
+        } else {
+          document
+            .querySelector("h2")
+            .insertAdjacentHTML("beforeend", `<span>-Create</span>`);
+        }
+      };
+
+      const deleteBtn = async () => {
+        const respo = await fetch(url, {
+          method: "DELETE",
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MGRjNjBjNGIzNTgxNzAwMTVjMjI3MGQiLCJpYXQiOjE2MjUwNTU0MjgsImV4cCI6MTYyNjI2NTAyOH0.sK7YEMPt-TWTjKV0e9vzNxLJCKX5zhbAYRIxCPheR2g",
+            "content-type": "application/json",
+          },
+        });
+        alert("SUCCESSFULLY DELETED A PRODUCT");
+      };
+
       const submitForm = async (event) => {
         event.preventDefault();
-        let url = "https://striveschool-api.herokuapp.com/api/product/";
 
         let myForm = {
           name: document.getElementById("name").value,
@@ -149,7 +212,7 @@
         };
         try {
           const theFetched = await fetch(url, {
-            method: "POST",
+            method,
             body: JSON.stringify(myForm),
             headers: {
               Authorization:
